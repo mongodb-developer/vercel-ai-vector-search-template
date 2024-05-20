@@ -36,7 +36,7 @@ const AdminPage = () => {
     setLoading(true);
     formData.append('file', file);
 
-    const response = await fetch('http://localhost:3000/api/admin', {
+    const response = await fetch('/api/admin', {
       method: 'POST',
       headers: {
         'x-api-key': apiKey,
