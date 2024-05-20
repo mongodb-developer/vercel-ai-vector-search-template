@@ -9,14 +9,21 @@ import mongoClientPromise from '@/app/lib/mongodb';
 import { PDFLoader } from 'langchain/document_loaders/fs/pdf';
 import Busboy from 'busboy';
 import 'dotenv/config';
+import fs from 'fs/promises';
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+//  export const config = {
+//    api: {
+//     bodyParser: false,
+//    }
+// };
 
+export const runtime = 'nodejs';
 
+interface FileData {
+  mimetype: string;
+  filePath: string;
+  // other properties
+}
 
 const authenticateAdmin = (req: NextRequest): boolean => {
   const apiKey = req.headers.get('x-api-key');
@@ -24,6 +31,7 @@ const authenticateAdmin = (req: NextRequest): boolean => {
 };
 
 const processPDF = async (filePath: string) => {
+  // const fileBuffer = await fs.readFile();
   const loader = new PDFLoader(filePath);
   const data = await loader.load();
   const textSplitter = new RecursiveCharacterTextSplitter({
@@ -55,7 +63,7 @@ export async function POST(req: NextRequest) {
 
   const contentType = req.headers.get('content-type') || '';
   const busboy = Busboy({ headers: { 'content-type': contentType } });
-  let fileData: { filePath: string, mimetype: string } | null = null;
+  let fileData: FileData = { mimetype: '', filePath: '' };
 
   const uploadDir = './uploads';
   await fsp.mkdir(uploadDir, { recursive: true });
@@ -112,18 +120,18 @@ export async function POST(req: NextRequest) {
   });
 
   await promise;
-
-  if (!fileData) {
+  let docs;
+  if (!fileData.mimetype) {
     console.error('No file uploaded.');
     return NextResponse.json({ message: 'No file uploaded.' }, { status: 400 });
   }
-
-  let docs;
+  else {
+  
   try {
     console.log('File data:', JSON.stringify(fileData));
     if (fileData.mimetype === 'application/pdf') {
       console.log('Processing PDF');
-      docs = await processPDF(`${uploadDir}/test.pdf`);
+      docs = await processPDF(fileData.filePath);
     } else if (fileData.mimetype === 'text/csv') {
       console.log('Processing CSV');
       docs = await processCSV(fileData.filePath);
@@ -134,11 +142,12 @@ export async function POST(req: NextRequest) {
       console.error('Unsupported file type:', fileData.mimetype);
       return NextResponse.json({ message: 'Unsupported file type.' }, { status: 400 });
     }
+  
   } catch (error) {
     console.error('Error processing file:', error);
     return NextResponse.json({ message: 'Error processing file.' }, { status: 500 });
   }
-
+  }
   try {
     const client = await mongoClientPromise;
     const dbName = 'docs';

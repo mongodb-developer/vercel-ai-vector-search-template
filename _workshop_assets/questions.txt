@@ -1,3 +1,0 @@
-What was the last change made to the FancyWidget library?
-How do I install the FancyWidget library?
-What type of license is the FancyWidget library released under?
