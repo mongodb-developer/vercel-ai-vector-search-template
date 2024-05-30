@@ -10,9 +10,12 @@
     "embed": "node createEmbeddings.mjs"
   },
   "dependencies": {
+    "@langchain/community": "^0.2.4",
     "@langchain/mongodb": "^0.0.1",
     "@langchain/openai": "^0.0.28",
     "@types/formidable": "^3.4.5",
+    "@types/papaparse": "^5.3.14",
+    "@vercel/blob": "^0.23.3",
     "ai": "2.2.14",
     "axios": "^1.7.2",
     "busboy": "^1.6.0",
@@ -25,7 +28,10 @@
     "langchain": "^0.0.129",
     "mongodb": "^5.9.0",
     "next": "^14.2.3",
+    "papaparse": "^5.4.1",
+    "pdf-lib": "^1.17.1",
     "pdf-parse": "^1.1.1",
+    "pdfjs-dist": "^4.3.136",
     "react": "18.2.0",
     "react-dom": "^18.2.0",
     "react-markdown": "^9.0.1"

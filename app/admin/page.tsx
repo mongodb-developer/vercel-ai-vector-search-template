@@ -4,6 +4,15 @@ import Link from 'next/link';
 
 import { useState, ChangeEvent } from 'react';
 
+const getFullUrl = (url: string): string => {
+  if (typeof window === 'undefined') {
+      // Server-side, construct the absolute URL
+      const baseUrl = process.env.VERCEL_BASE_URL || 'http://localhost:3000';
+      return `${baseUrl}${url}`;
+  }
+  // Client-side, use the relative URL directly
+  return url;
+};
 
 const AdminPage = () => {
   const [file, setFile] = useState<File | null>(null);
@@ -36,8 +45,8 @@ const AdminPage = () => {
     setLoading(true);
     formData.append('file', file);
 
-    const response = await fetch('/api/admin', {
-      method: 'POST',
+    const response = await fetch(getFullUrl('/api/admin'), {
+      method: 'PUT',
       headers: {
         'x-api-key': apiKey,
       },
@@ -58,7 +67,7 @@ const AdminPage = () => {
     <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-4">
       <div className="bg-white shadow-md rounded-lg p-8 max-w-lg w-full">
         <h1 className="text-2xl font-bold mb-6">Admin Page</h1>
-        <p className="text-gray-700 mb-4">Upload a file (PDF, JSON or CSV) to be added as context for the chatbot. You will need to provide an admin API key.</p>
+        <p className="text-gray-700 mb-4">Upload a file (PDF, MD, MDX) to be added as context for the chatbot. You will need to provide an admin API key.</p>
         <input
           type="password"
           placeholder="Enter API key"
@@ -71,7 +80,7 @@ const AdminPage = () => {
           type="file"
           onChange={handleFileChange}
           className="w-full p-2 border border-gray-300 rounded mb-4"
-          accept=".pdf,.csv,.json"
+          accept=".pdf,.md, .mdx"
           title="Upload a PDF, CSV, or JSON file"
         />
         <button

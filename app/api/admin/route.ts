@@ -1,159 +1,100 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { promises as fsp, createWriteStream } from 'fs';
-import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
+
+import {
+  SupportedTextSplitterLanguages,
+  RecursiveCharacterTextSplitter,
+} from "langchain/text_splitter";
+import { WebPDFLoader } from "@langchain/community/document_loaders/web/pdf";
 import { OpenAIEmbeddings } from '@langchain/openai';
 import { MongoDBAtlasVectorSearch } from '@langchain/mongodb';
-import { JSONLoader } from "langchain/document_loaders/fs/json";
-import { CSVLoader } from "langchain/document_loaders/fs/csv";
 import mongoClientPromise from '@/app/lib/mongodb';
-import { PDFLoader } from 'langchain/document_loaders/fs/pdf';
-import Busboy from 'busboy';
 import 'dotenv/config';
-import fs from 'fs/promises';
-
-//  export const config = {
-//    api: {
-//     bodyParser: false,
-//    }
-// };
+import { put } from '@vercel/blob'; // Import Vercel Blob
 
 export const runtime = 'nodejs';
 
 interface FileData {
+  name : string;
   mimetype: string;
-  filePath: string;
-  // other properties
 }
 
-const authenticateAdmin = (req: NextRequest): boolean => {
+const authenticateAdmin = (req: Request): boolean => {
   const apiKey = req.headers.get('x-api-key');
   return apiKey === process.env.ADMIN_API_KEY;
 };
 
-const processPDF = async (filePath: string) => {
-  // const fileBuffer = await fs.readFile();
-  const loader = new PDFLoader(filePath);
-  const data = await loader.load();
-  const textSplitter = new RecursiveCharacterTextSplitter({
-    chunkSize: 200,
-    chunkOverlap: 20,
-  });
-  return await textSplitter.splitDocuments(data);
-};
+const processPDF = async (url: string) => {
 
-const processCSV = async (filePath: string) => {
-  const loader = new CSVLoader(filePath);
-
-  const data = await loader.load();
-
-  return data;
-};
-
-const processJSON = async (filePath: string) => {
+  const blob = await fetch(url).then((res) => res.blob());
   
-  const loader = new JSONLoader(filePath);
-  const data = await loader.load();
-  return data;
+  const loader = new WebPDFLoader(blob);
+
+  const docs = await loader.load();
+
+  return docs;
+
 };
 
-export async function POST(req: NextRequest) {
-  if (!authenticateAdmin(req)) {
+const processMD = async (url: string) => {
+
+  const text = await fetch(url).then((res) => res.text());
+
+  const splitter = RecursiveCharacterTextSplitter.fromLanguage("markdown", {
+    chunkSize: 500,
+    chunkOverlap: 0,
+  });
+  const docs = await splitter.createDocuments([text]);
+
+  return docs;
+
+}
+
+
+export async function PUT(request: Request) {
+  if (!authenticateAdmin(request)) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
 
-  const contentType = req.headers.get('content-type') || '';
-  const busboy = Busboy({ headers: { 'content-type': contentType } });
-  let fileData: FileData = { mimetype: '', filePath: '' };
-
-  const uploadDir = './uploads';
-  await fsp.mkdir(uploadDir, { recursive: true });
-
-  const buffer = await req.arrayBuffer();
-  const readableStream = new ReadableStream({
-    start(controller) {
-      controller.enqueue(new Uint8Array(buffer));
-      controller.close();
-    },
-  });
-
-  const stream = readableStream.getReader();
-  const promise = new Promise<void>((resolve, reject) => {
-    busboy.on('file', (fieldname: any, file: any, filename: any, encoding: any, mimetype: any) => {
-      console.log('File uploaded:', JSON.stringify(filename.filename));
-      console.log('MIME type:',filename.mimeType);
-      console.log('Encoding:', filename.encoding);
-
-      const filePath = `${uploadDir}/${filename.filename}`;
-      const writeStream = createWriteStream(filePath);
-      fileData = { filePath : filePath, "mimetype" : filename.mimeType };
-      file.pipe(writeStream);
-      writeStream.on('finish', () => {
-        console.log('in File written');
-        console.log(`File written to ${JSON.stringify(filePath)}`);
-        
-        resolve();
-      });
-      writeStream.on('error', (error) => {
-        console.error('Error writing file:', error);
-        reject(error);
-      });
-    });
-
-    busboy.on('finish', () => {
-      console.log('Busboy finished parsing the form');
-      resolve();
-    });
-
-    busboy.on('error', (error) => {
-      console.error('Busboy error:', error);
-      reject(error);
-    });
-
-    (async () => {
-      while (true) {
-        const { done, value } = await stream.read();
-        if (done) break;
-        busboy.write(Buffer.from(value));
-      }
-      busboy.end();
-    })();
-  });
-
-  await promise;
-  let docs;
-  if (!fileData.mimetype) {
+  const form = await request.formData();
+  const file = form.get('file') as File;
+  if (!file) {
     console.error('No file uploaded.');
     return NextResponse.json({ message: 'No file uploaded.' }, { status: 400 });
   }
-  else {
-  
+
+  // Upload the file to Vercel Blob and get the blob URL
+  const blob = await put(file.name, file, { access: 'public' });
+
+  console.log('File type:', file.type);
+
+  console.log('File uploaded:', blob.url);
+
+  // Fetch the uploaded file as a buffer
+  const fileData: FileData = { mimetype: file.type, name : file.name };
+
+  let docs;
   try {
-    console.log('File data:', JSON.stringify(fileData));
     if (fileData.mimetype === 'application/pdf') {
-      console.log('Processing PDF');
-      docs = await processPDF(fileData.filePath);
-    } else if (fileData.mimetype === 'text/csv') {
-      console.log('Processing CSV');
-      docs = await processCSV(fileData.filePath);
-    } else if (fileData.mimetype === 'application/json') {
-      console.log('Processing JSON');
-      docs = await processJSON(fileData.filePath);
-    } else {
-      console.error('Unsupported file type:', fileData.mimetype);
+      console.log('Processing PDF file...');
+      docs = await processPDF(blob.url);
+    }
+    else if (fileData.mimetype === 'application/octet-stream') {
+      console.log('Processing Markdown file...');
+      docs = await processMD(blob.url);
+    }
+     else {
       return NextResponse.json({ message: 'Unsupported file type.' }, { status: 400 });
     }
-  
   } catch (error) {
-    console.error('Error processing file:', error);
+    console.error(error);
     return NextResponse.json({ message: 'Error processing file.' }, { status: 500 });
   }
-  }
+
   try {
     const client = await mongoClientPromise;
     const dbName = 'docs';
     const collectionName = 'embeddings';
     const collection = client.db(dbName).collection(collectionName);
-
 
     await MongoDBAtlasVectorSearch.fromDocuments(docs, new OpenAIEmbeddings(), {
       collection,
@@ -162,9 +103,9 @@ export async function POST(req: NextRequest) {
       embeddingKey: 'embedding',
     });
   } catch (error) {
-    console.error('Error saving documents to MongoDB:', error);
+    console.error(error);
     return NextResponse.json({ message: 'Error saving documents.' }, { status: 500 });
   }
 
-  return NextResponse.json({ message: 'Documents uploaded successfully.' }, { status: 200 });
+  return NextResponse.json({ message: 'Documents uploaded successfully.', blob }, { status: 200 });
 }
