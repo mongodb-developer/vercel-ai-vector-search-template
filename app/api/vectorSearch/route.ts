@@ -2,7 +2,8 @@ import { OpenAIEmbeddings } from "@langchain/openai";
 import mongoClientPromise from '@/app/lib/mongodb';
 import { MongoDBAtlasVectorSearch } from "@langchain/mongodb";
 
-export async function POST(req: Request) {
+
+export  async function POST(req: Request) {
     const client = await mongoClientPromise;
     const dbName = "docs";
     const collectionName = "embeddings";
@@ -29,7 +30,7 @@ export async function POST(req: Request) {
       });
     
 
-    const retrievedResults = await retriever.getRelevantDocuments(question)
+    const retrievedResults = await retriever.invoke(question)
   
     //return Response.json(retrievedResults);
     return new Response(JSON.stringify(retrievedResults), {

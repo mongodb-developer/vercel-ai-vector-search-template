@@ -28,7 +28,7 @@ TBD
 
 You can clone & deploy it to Vercel with one click:
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fmongodb-developer%2Fvercel-ai-vector-search-template&env=MONGODB_ATLAS_URI,OPENAI_API_KEY,ADMIN_API_KEY,NODE_ENV)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fmongodb-developer%2Fvercel-ai-vector-search-template&env=MONGODB_ATLAS_URI,OPENAI_API_KEY,ADMIN_API_KEY,VERCEL_BASE_URL,NODE_ENV)
 
 ## Developing Locally
 
@@ -45,6 +45,9 @@ NODE_ENV=development
 MONGODB_ATLAS_URI=<your_atlas_uri>
 OPENAI_API_KEY=<your_openai_key>
 ADMIN_API_KEY=<access_key_to_use_on_admin>
+VERCEL_BASE_URL=<the_deployed_domain_url>
+## Optional
+
 ```
 First, install the dependencies:
 
