@@ -11,10 +11,6 @@
 
 ## Introduction
 
-
-
-
-
 ## How It Works
 
 The server is mapped into to Next.js app under `/app/api/`.
@@ -42,10 +38,17 @@ SITE_BASE_URL=<the_deployed_domain_url> ## eg. https://mychat-project.vercel.app
 
 
 
-**The Admin page for context upload will work only if you connect the ["Vercel Storage"](https://vercel.com/docs/storage/vercel-blob) type blob to your project**
+**The Admin page for context upload will work only if you connect the ["Vercel Storage"](https://vercel.com/docs/storage/vercel-blob) type blob to your project as it uses it to upload files for processing**
 
-## Developing Locally
+#### Upload fake docs as test context
 
+Clone the repo and run locally:
+```
+npm install
+npm run embed
+```
+
+This will vectorize the "FancyWidget" under `./fake_docs` docs as context for the chatbot.
 
 
 ## Getting Started
@@ -53,7 +56,7 @@ SITE_BASE_URL=<the_deployed_domain_url> ## eg. https://mychat-project.vercel.app
 Create your MongoDB Deployment and get your connection URI:
 - [Atlas quick start](https://www.mongodb.com/docs/atlas/getting-started/)
 
-Create an atlas vector index named `vector_index` on database `docs` collection ```embeddings```:
+Create an [atlas vector index](https://www.mongodb.com/docs/atlas/atlas-vector-search/create-index/) named `vector_index` on database `docs` collection ```embeddings```:
 ```
 {
   "fields": [
@@ -77,6 +80,9 @@ SITE_BASE_URL=<the_deployed_domain_url> ## eg. https://mychat-project.vercel.app
 ## Optional
 
 ```
+
+## Developing Locally
+
 First, install the dependencies:
 
 ```bash

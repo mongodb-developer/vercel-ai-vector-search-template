@@ -10,7 +10,7 @@ const dbName = "docs";
 const collectionName = "embeddings";
 const collection = client.db(dbName).collection(collectionName);
 
-const docs_dir = "_workshop_assets/fake_docs";
+const docs_dir = "fake_docs";
 const fileNames = await fsp.readdir(docs_dir);
 console.log(fileNames);
 for (const fileName of fileNames) {
