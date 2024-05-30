@@ -30,7 +30,16 @@ const getFullUrl = (url: string): string => {
 
     //  const vectorSearch = await axios.post(getFullUrl("/api/vectorSearch"), currentMessageContent).then((res) => res.data);
     
-      const TEMPLATE = `You are a very enthusiastic FancyWidget representative who loves to help people! Given the following sections from the FancyWidget documentation, answer the question using only that information, outputted in markdown format. If you are unsure and the answer is not explicitly written in the documentation, say "Sorry, I don't know how to help with that."
+      const TEMPLATE = `You are a very enthusiastic representative who loves to help people! Given the following sections from the uploaded docs, answer the question using only that information, outputted in markdown format. If there is no context (empty list) at all mention the  "admin" page to upload knowledge as well as verifying the Atlas Vector index is created correctly on db: \`docs\` and collection \`embeddings\` \`\`\`{
+        "fields": [
+          {
+            "type": "vector",
+            "path": "embedding",
+            "numDimensions": 1536,
+            "similarity": "cosine"
+          }
+        ]
+      }\`\`\` . If you are unsure and the answer is not explicitly written in the documentation, say "Sorry, I don't know how to help with that.".
       
       Context sections:
       ${JSON.stringify(vectorSearch)}

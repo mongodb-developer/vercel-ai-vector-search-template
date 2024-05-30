@@ -39,6 +39,20 @@ You can clone & deploy it to Vercel with one click:
 Create your MongoDB Deployment and get your connection URI:
 - [Atlas quick start](https://www.mongodb.com/docs/atlas/getting-started/)
 
+Create an atlas vector index named `vector_index` on database `docs` collection ```embeddings```:
+```
+{
+  "fields": [
+    {
+      "type": "vector",
+      "path": "embedding",
+      "numDimensions": 1536,
+      "similarity": "cosine"
+    }
+  ]
+}
+```
+
 Set the needed environment variable on `.env.local`:
 ```bash
 NODE_ENV=development
