@@ -7,7 +7,7 @@ import { useState, ChangeEvent } from 'react';
 const getFullUrl = (url: string): string => {
   if (typeof window === 'undefined') {
       // Server-side, construct the absolute URL
-      const baseUrl = process.env.VERCEL_BASE_URL || 'http://localhost:3000';
+      const baseUrl = process.env.SITE_BASE_URL || 'http://localhost:3000';
       return `${baseUrl}${url}`;
   }
   // Client-side, use the relative URL directly
