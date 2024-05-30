@@ -70,6 +70,8 @@ Create an [atlas vector index](https://www.mongodb.com/docs/atlas/atlas-vector-s
 }
 ```
 
+## Developing Locally
+
 Set the needed environment variable on `.env.local`:
 ```bash
 NODE_ENV=development
@@ -80,8 +82,6 @@ SITE_BASE_URL=<the_deployed_domain_url> ## eg. https://mychat-project.vercel.app
 ## Optional
 
 ```
-
-## Developing Locally
 
 First, install the dependencies:
 
