@@ -4,6 +4,7 @@ import { MongoDBAtlasVectorSearch } from "@langchain/mongodb";
 
 
 export  async function POST(req: Request) {
+  try {
     const client = await mongoClientPromise;
     const dbName = "docs";
     const collectionName = "embeddings";
@@ -36,4 +37,12 @@ export  async function POST(req: Request) {
     return new Response(JSON.stringify(retrievedResults), {
       headers: { 'Content-Type': 'application/json' }
     });
+  }
+  catch (error) {
+    console.error(error);
+    return new Response(JSON.stringify(error), {
+      status: 500,
+      headers: { 'Content-Type': 'text/plain' }
+    });
+  }
 }
