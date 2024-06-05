@@ -25,9 +25,14 @@ jobs:
       - name: Install Vercel CLI
         run: npm install -g vercel
 
-      - name: Start Vercel server in the background
-        run: npm run build && npm start &> vercel.log &
+      - name: Build Vercel server in the background
+        run: npm run build
         shell: bash
+
+      - name: Start Vercel Server
+        run: npm start &> vercel.log &
+        shell: bash
+        
 
       - name: Wait for Vercel server to be ready
         run: |
