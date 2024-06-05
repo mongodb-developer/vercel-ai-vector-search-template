@@ -9,6 +9,8 @@
 
 <br/>
 
+[![End-to-End Tests](https://github.com/mongodb-developer/vercel-ai-vector-search-template/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/mongodb-developer/vercel-ai-vector-search-template/actions/workflows/main.yml)
+
 ## Introduction
 
 ## How It Works
